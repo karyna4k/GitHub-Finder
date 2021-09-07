@@ -8,17 +8,23 @@
             placeholder="Type username..."
             @search="search = $event"
           />
-          <button @click="getRepos" class="btn btnPrimary">Search</button>
-          <div class="repos" v-if="repos">
-            <div class="repos__item" v-for="repo in repos" :key="repo.id">
+          <!-- buttons -->
+          <button v-if="!repos" @click="getRepos" class="btn btnPrimary">Search</button>
+          <button v-else @click="getRepos" class="btn btnPrimary">Search again</button>
+          <!-- errors -->
+          <div class="error" v-if="error">{{ error }}</div>
+
+          <!-- repos list -->
+          <ul class="repos" v-if="repos">
+            <li class="repos__item" v-for="repo in repos" :key="repo.id">
               <div class="repos__info">
                 <a class="link" :href="repo.html_url" target="_blank">{{
                   repo.name
                 }}</a>
                 <span>{{ repo.stargazers_count }}⭐</span>
               </div>
-            </div>
-          </div>
+            </li>
+          </ul>
         </div>
       </div>
     </section>
@@ -34,6 +40,7 @@ export default {
   data() {
     return {
       search: "",
+      error: null,
       repos: null,
     };
   },
@@ -42,10 +49,14 @@ export default {
       axios
         .get(`https://api.github.com/users/${this.search}/repos`)
         .then((res) => {
-          console.log(res.data);
+          this.error = null;
           this.repos = res.data;
         })
-        .catch((err) => console.log(err));
+        .catch((err) => {
+          console.log(err);
+          this.repos = null;
+          this.error = "Can't find this user!";
+        });
     },
   },
 };
@@ -78,5 +89,10 @@ export default {
     justify-content: space-between;
     align-items: center;
   }
+}
+
+.error {
+  width: 100%;
+  text-align: center;
 }
 </style>
